@@ -399,11 +399,11 @@ function showReport(){
     <div class="r-val">${data.suenio||'—'}</div>
   </div>
 
-  <button class="pdf-btn" onclick="generatePDF()">
+  <button class="pdf-btn" onclick="submitAndPDF()">
     <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Descargar PDF — Anexo Informe 2
   </button>
-  <div class="pdf-note">Este PDF incluye todas las respuestas de Emilio y está listo para el anexo del informe</div>
+  <div class="pdf-note" id="send-status">Al descargar, tus respuestas se enviarán automáticamente al equipo investigador</div>
   `;
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -581,6 +581,44 @@ function generatePDF(){
   doc.text('M14 Studio — Diagnóstico Empresarial · Informe 2',mg,277);
 
   doc.save('Diagnostico_M14_Studio_Grupo12.pdf');
+}
+
+async function submitToFormspree(){
+  const payload={
+    _subject:'Diagnostico M14 Studio — '+(data.nombre||'Sin nombre'),
+    nombre:data.nombre||'—',cargo:data.cargo||'—',anios:data.anios||'—',
+    equipo:data.equipo||'—',descripcion:data.desc||'—',
+    variacion_ingresos:data.variacion||'—',meses_bajos:data.meses_bajos||'—',
+    retainers:data.retainers||'—',urgencia_ingresos:data.urgencia_ingresos||'—',
+    causa_ingresos:data.causa_ingresos||'—',clientes_total:data.clientes_total||'—',
+    clientes_repiten:data.clientes_repiten||'—',concentracion:data.concentracion||'—',
+    seguimiento:data.seguimiento||'—',urgencia_clientes:data.urgencia_clientes||'—',
+    proyectos_paralelo:data.proyectos_paralelo||'—',rechazos:data.rechazos||'—',
+    documentacion:data.documentacion||'—',dependencia:data.dependencia||'—',
+    urgencia_ops:data.urgencia_ops||'—',especialidad:data.especialidad||'—',
+    razon_eleccion:data.razon_eleccion||'—',competencia:data.competencia||'—',
+    nicho:data.nicho||'—',urgencia_posic:data.urgencia_posic||'—',
+    problema_principal:data.problema_1||'—',freno_crecimiento:data.freno||'—',
+    vision_2_anos:data.suenio||'—',
+  };
+  try{
+    await fetch('https://formspree.io/f/mbdbkkjb',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(payload),
+    });
+  }catch(e){console.log('Formspree error:',e);}
+}
+
+async function submitAndPDF(){
+  const btn=document.querySelector('.pdf-btn');
+  const note=document.getElementById('send-status');
+  btn.disabled=true;btn.style.opacity='0.7';
+  if(note) note.textContent='Enviando respuestas...';
+  await submitToFormspree();
+  if(note){note.textContent='Respuestas enviadas. Descargando PDF...';note.style.color='#1A6B3C';}
+  setTimeout(()=>generatePDF(),400);
+  setTimeout(()=>{btn.disabled=false;btn.style.opacity='1';},2000);
 }
 
 render();
