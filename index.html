@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico M14 Studio — Taller de Negocios 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --gold:#C9A84C;--gold-light:#E8D09A;--black:#111111;--white:#ffffff;
+    --gray:#666666;--gray-light:#F5F5F5;--gray-mid:#E0E0E0;
+    --red:#C0392B;--green:#1A6B3C;--blue:#1F4E79;--purple:#5B2C6F;
+    --card-bg:#FAFAFA;--border:#E0E0E0;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F2F0;color:#111;min-height:100vh}
+  .app{max-width:720px;margin:0 auto;padding:2rem 1rem 4rem}
+
+  /* COVER */
+  .cover{background:#111;border-radius:16px;padding:2.5rem 2.5rem 2.5rem 3rem;margin-bottom:2rem;position:relative;overflow:hidden}
+  .cover::before{content:'';position:absolute;left:0;top:0;width:6px;height:100%;background:var(--gold)}
+  .cover-label{font-size:10px;color:var(--gold);letter-spacing:5px;font-weight:600;margin-bottom:.6rem;text-transform:uppercase}
+  .cover h1{font-size:36px;font-weight:700;color:#fff;margin-bottom:.4rem;line-height:1.1}
+  .cover p{font-size:14px;color:#888;margin-bottom:1.5rem;line-height:1.6}
+  .cover-meta{font-size:12px;color:#555;border-top:1px solid #222;padding-top:1rem}
+
+  /* PROGRESS */
+  .progress-wrap{margin-bottom:2rem}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--gray);margin-bottom:.5rem}
+  .progress-bar{background:#E0E0E0;border-radius:8px;height:5px;overflow:hidden}
+  .progress-fill{background:var(--gold);height:100%;border-radius:8px;transition:width .4s ease}
+
+  /* SECTION */
+  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1.5px solid var(--gold)}
+  .section-dot{width:32px;height:32px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#111;flex-shrink:0}
+  .section-title{font-size:18px;font-weight:600;color:#111}
+  .section-sub{font-size:13px;color:var(--gray);margin-top:2px}
+
+  /* QUESTIONS */
+  .q-block{margin-bottom:1.5rem}
+  .q-label{font-size:14px;color:#222;margin-bottom:.6rem;display:block;line-height:1.5;font-weight:500}
+  .q-num{display:inline-block;font-size:10px;background:#111;color:var(--gold);padding:2px 7px;border-radius:4px;margin-right:6px;font-weight:600;letter-spacing:1px}
+
+  input[type=text],textarea,select{
+    width:100%;border:1.5px solid var(--border);border-radius:10px;
+    padding:.7rem 1rem;font-size:14px;font-family:inherit;
+    color:#111;background:#fff;transition:border .2s;
+  }
+  input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold)}
+  textarea{resize:vertical;min-height:80px}
+
+  /* CHOICES */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .choices.cols1{grid-template-columns:1fr}
+  .choice{
+    border:1.5px solid var(--border);border-radius:10px;
+    padding:.65rem 1rem;cursor:pointer;font-size:13px;
+    color:#444;transition:all .15s;text-align:left;line-height:1.4;
+    background:#fff;
+  }
+  .choice:hover{border-color:var(--gold);background:#FFFBF0}
+  .choice.selected{border-color:var(--gold);background:#FFF8E6;color:#111;font-weight:500}
+
+  /* SCALE */
+  .scale-wrap{display:flex;gap:8px;flex-wrap:wrap}
+  .scale-btn{
+    flex:1;min-width:44px;border:1.5px solid var(--border);border-radius:10px;
+    padding:.6rem .5rem;cursor:pointer;font-size:15px;font-weight:600;
+    color:#666;text-align:center;transition:all .15s;background:#fff;
+  }
+  .scale-btn:hover{border-color:var(--gold)}
+  .scale-btn.sel{background:var(--gold);border-color:var(--gold);color:#111}
+  .scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--gray);margin-top:.4rem}
+
+  /* NAV */
+  .nav{display:flex;gap:12px;margin-top:2rem}
+  .btn-back{flex:1;padding:.85rem;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-size:14px;color:#666;font-weight:500;transition:all .15s}
+  .btn-back:hover{background:var(--gray-light)}
+  .btn-next{flex:2;padding:.85rem;border:none;border-radius:10px;background:var(--gold);cursor:pointer;font-size:14px;color:#111;font-weight:700;transition:all .15s}
+  .btn-next:hover{background:#b8943e}
+  .btn-next:active{transform:scale(.98)}
+
+  /* REPORT */
+  .report-header{background:#111;border-radius:16px;padding:2rem 2rem 2rem 2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+  .report-header::before{content:'';position:absolute;left:0;top:0;width:5px;height:100%;background:var(--gold)}
+  .report-header h2{color:#fff;font-size:24px;font-weight:700;margin-bottom:.3rem}
+  .report-header p{color:#888;font-size:13px}
+
+  .r-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+  .r-title{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:3px;margin-bottom:.75rem;text-transform:uppercase}
+  .r-val{font-size:14px;color:#222;line-height:1.6}
+
+  .meter-row{margin-bottom:.75rem}
+  .meter-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:.3rem}
+  .meter-label{color:#666}
+  .meter-value{font-weight:600;color:#111}
+  .meter-bar{height:7px;background:var(--gray-mid);border-radius:4px;overflow:hidden}
+  .meter-fill{height:100%;border-radius:4px;background:var(--gold);transition:width .6s ease}
+  .meter-fill.red{background:#e74c3c}
+  .meter-fill.amber{background:#f39c12}
+  .meter-fill.green{background:#27ae60}
+
+  .urgency-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .urg-card{background:var(--gray-light);border-radius:10px;padding:.9rem}
+  .urg-label{font-size:12px;color:var(--gray);margin-bottom:.3rem}
+  .urg-val{font-size:22px;font-weight:700;color:var(--gold)}
+  .urg-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;margin-top:.3rem}
+  .tag-red{background:#FDECEA;color:#c0392b}
+  .tag-amber{background:#FEF9EC;color:#856404}
+  .tag-green{background:#EAF7EE;color:#1a6b3c}
+
+  .highlight-box{background:#FFF8E6;border:1.5px solid var(--gold);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+  .highlight-box .r-title{color:#856404}
+  .highlight-box .r-val{font-size:15px;font-weight:600;color:#111}
+
+  .pdf-btn{
+    width:100%;padding:1.1rem;border:none;border-radius:12px;
+    background:#111;color:var(--gold);font-size:15px;font-weight:700;
+    cursor:pointer;margin-top:1.5rem;display:flex;align-items:center;
+    justify-content:center;gap:10px;transition:all .15s;
+  }
+  .pdf-btn:hover{background:#222}
+  .pdf-btn svg{width:20px;height:20px;fill:none;stroke:var(--gold);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .pdf-note{text-align:center;font-size:12px;color:var(--gray);margin-top:.75rem}
+
+  @media(max-width:500px){
+    .choices{grid-template-columns:1fr}
+    .urgency-grid{grid-template-columns:1fr}
+    .cover h1{font-size:28px}
+    .app{padding:1rem .75rem 3rem}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="cover">
+  <div class="cover-label">Diagnóstico Empresarial</div>
+  <h1>M14 Studio</h1>
+  <p>Cuestionario para identificar los principales desafíos del negocio. Tus respuestas generarán un reporte automático que será usado como insumo de análisis.</p>
+  <div class="cover-meta">Tiempo estimado: 8–12 minutos &nbsp;·&nbsp; Grupo 12 &nbsp;·&nbsp; Taller de Negocios 2026 &nbsp;·&nbsp; Prof. Nicole Pinaud</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span id="prog-label">Sección 1 de 6</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<div id="step-container"></div>
+
+</div>
+
+<script>
+const STEPS=[
+{id:0,icon:'1',title:'La empresa',sub:'Contexto general de M14 Studio',fields:[
+  {id:'nombre',label:'Tu nombre completo',type:'text',ph:'Ej: Emilio Nualart',req:true},
+  {id:'cargo',label:'Tu cargo en M14 Studio',type:'text',ph:'Ej: Co-founder',req:true},
+  {id:'anios',label:'¿Cuántos años lleva M14 Studio operando?',type:'scale',opts:['1','2','3','4','5+']},
+  {id:'equipo',label:'¿Cuántas personas trabajan en M14 hoy? (incluyendo freelancers habituales)',type:'choices',opts:['Solo 1–2 personas','3 personas fijas','3–5 incluyendo freelancers','6 o más']},
+  {id:'desc',label:'En tus propias palabras, ¿cómo describirías M14 hoy en una frase?',type:'area',ph:'Ej: Somos una productora audiovisual boutique que...'},
+]},
+{id:1,icon:'2',title:'Ingresos y finanzas',sub:'Estabilidad y comportamiento de los ingresos',fields:[
+  {id:'variacion',label:'¿Cuánto varía la facturación entre el mes más alto y el más bajo del año?',type:'choices',opts:['Menos de 20%','Entre 20% y 40%','Entre 40% y 70%','Más del 70%']},
+  {id:'meses_bajos',label:'¿Cuántos meses al año hay baja o nula actividad productiva?',type:'scale',opts:['0','1','2','3','4+']},
+  {id:'retainers',label:'¿Tienen contratos fijos mensuales con algún cliente (retainers)?',type:'choices',opts:['Sí, varios','Sí, uno solo','Estamos evaluando','No, todo es por proyecto']},
+  {id:'urgencia_ingresos',label:'¿Qué tan urgente es resolver la variabilidad de ingresos?',type:'scale',opts:['1','2','3','4','5'],sublabel:['Nada urgente','Crítico']},
+  {id:'causa_ingresos',label:'En tu opinión, ¿cuál es la razón principal de esta variabilidad de ingresos?',type:'area',ph:'Cuéntanos con tus palabras...'},
+]},
+{id:2,icon:'3',title:'Clientes y cartera',sub:'Concentración, retención y fidelización',fields:[
+  {id:'clientes_total',label:'¿Con cuántos clientes distintos han trabajado en los últimos 2 años?',type:'choices',opts:['Menos de 5','Entre 5 y 10','Entre 10 y 20','Más de 20']},
+  {id:'clientes_repiten',label:'¿Qué porcentaje de esos clientes ha repetido un segundo proyecto?',type:'choices',opts:['Menos del 20%','Entre 20% y 40%','Entre 40% y 60%','Más del 60%']},
+  {id:'concentracion',label:'¿El cliente más importante representa qué porcentaje de sus ingresos?',type:'choices',opts:['Menos del 20%','Entre 20% y 35%','Entre 35% y 50%','Más del 50%']},
+  {id:'seguimiento',label:'Cuando termina un proyecto, ¿existe un proceso activo de seguimiento con el cliente?',type:'choices',opts:['Sí, siempre','A veces','Rara vez','No existe proceso']},
+  {id:'urgencia_clientes',label:'¿Qué tan urgente es mejorar la retención de clientes?',type:'scale',opts:['1','2','3','4','5'],sublabel:['Nada urgente','Crítico']},
+]},
+{id:3,icon:'4',title:'Operaciones y equipo',sub:'Capacidad, procesos y dependencia en personas',fields:[
+  {id:'proyectos_paralelo',label:'¿Cuántos proyectos pueden manejar cómodamente en paralelo con el equipo actual?',type:'scale',opts:['1','2','3','4','5+']},
+  {id:'rechazos',label:'¿Han tenido que rechazar proyectos por falta de capacidad?',type:'choices',opts:['Sí, frecuentemente','Sí, alguna vez','Rara vez','Nunca']},
+  {id:'documentacion',label:'¿Los procesos de producción están documentados?',type:'choices',opts:['Sí, todo documentado','Parcialmente','Casi nada','No existe documentación']},
+  {id:'dependencia',label:'¿El negocio depende críticamente de 1 o 2 personas clave para funcionar?',type:'choices',opts:['Sí, completamente','Bastante','Un poco','No, está distribuido']},
+  {id:'urgencia_ops',label:'¿Qué tan urgente es mejorar la capacidad operacional?',type:'scale',opts:['1','2','3','4','5'],sublabel:['Nada urgente','Crítico']},
+]},
+{id:4,icon:'5',title:'Posicionamiento',sub:'Identidad, nicho y ventaja competitiva',fields:[
+  {id:'especialidad',label:'¿En qué tipo de proyecto se sienten más fuertes o diferenciados?',type:'choices',opts:['Moda y lifestyle','Publicidad y marcas','Corporativo B2B','Eventos','No tenemos uno claro']},
+  {id:'razon_eleccion',label:'¿Por qué crees que los clientes eligen M14 y no a otra productora?',type:'area',ph:'Cuéntanos con tus palabras...'},
+  {id:'competencia',label:'¿Se han comparado directamente con productoras especializadas en su área?',type:'choices',opts:['Sí, generalmente ganamos','Sí, perdemos a veces','Raramente','No nos comparamos']},
+  {id:'nicho',label:'¿M14 tiene definido un nicho o segmento de cliente objetivo?',type:'choices',opts:['Sí, muy claro','Algo definido','Poco claro','No, atendemos a todos']},
+  {id:'urgencia_posic',label:'¿Qué tan urgente es definir mejor el posicionamiento de M14?',type:'scale',opts:['1','2','3','4','5'],sublabel:['Nada urgente','Crítico']},
+]},
+{id:5,icon:'6',title:'Priorización final',sub:'¿Cuál es el problema más crítico para M14?',fields:[
+  {id:'problema_1',label:'Si tuvieras que resolver UN solo problema de M14 este año, ¿cuál sería?',type:'choices',cols:1,opts:['Estabilizar los ingresos (reducir la variabilidad mes a mes)','Escalar la capacidad operacional (crecer sin depender de 3 personas)','Definir un nicho claro y diferenciarnos de la competencia','Fidelizar clientes y aumentar la recurrencia de proyectos']},
+  {id:'freno',label:'¿Qué es lo que más frena el crecimiento de M14 hoy?',type:'area',ph:'Cuéntanos con total honestidad...'},
+  {id:'suenio',label:'¿Dónde quisieras que estuviera M14 en 2 años?',type:'area',ph:'Tu visión para el futuro del negocio...'},
+]},
+];
+
+const data={};
+let current=0;
+
+function save(){
+  STEPS[current].fields.forEach(f=>{
+    const el=document.getElementById('f_'+f.id);
+    if(el&&(f.type==='text'||f.type==='area')) data[f.id]=el.value;
+  });
+}
+
+function pick(id,val,el){
+  data[id]=val;
+  el.closest('.choices').querySelectorAll('.choice').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function pickScale(id,val,el){
+  data[id]=val;
+  el.closest('.scale-wrap').querySelectorAll('.scale-btn').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function render(){
+  const step=STEPS[current];
+  const pct=Math.round((current/STEPS.length)*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-label').textContent=`Sección ${current+1} de ${STEPS.length}`;
+
+  let html=`<div>
+  <div class="section-header">
+    <div class="section-dot">${step.icon}</div>
+    <div><div class="section-title">${step.title}</div><div class="section-sub">${step.sub}</div></div>
+  </div>`;
+
+  step.fields.forEach((f,fi)=>{
+    html+=`<div class="q-block"><label class="q-label"><span class="q-num">${step.icon}.${fi+1}</span>${f.label}</label>`;
+    if(f.type==='text'){
+      html+=`<input type="text" id="f_${f.id}" placeholder="${f.ph||''}" value="${data[f.id]||''}">`;
+    }else if(f.type==='area'){
+      html+=`<textarea id="f_${f.id}" placeholder="${f.ph||''}">${data[f.id]||''}</textarea>`;
+    }else if(f.type==='choices'){
+      html+=`<div class="choices${f.cols===1?' cols1':''}">`;
+      f.opts.forEach(o=>{
+        html+=`<div class="choice${data[f.id]===o?' selected':''}" onclick="pick('${f.id}','${o.replace(/'/g,"\\'")}',this)">${o}</div>`;
+      });
+      html+=`</div>`;
+    }else if(f.type==='scale'){
+      html+=`<div class="scale-wrap">`;
+      f.opts.forEach(o=>{
+        html+=`<div class="scale-btn${data[f.id]===o?' sel':''}" onclick="pickScale('${f.id}','${o}',this)">${o}</div>`;
+      });
+      html+=`</div>`;
+      if(f.sublabel) html+=`<div class="scale-labels"><span>${f.sublabel[0]}</span><span>${f.sublabel[1]}</span></div>`;
+    }
+    html+=`</div>`;
+  });
+
+  const isLast=current===STEPS.length-1;
+  html+=`<div class="nav">`;
+  if(current>0) html+=`<button class="btn-back" onclick="go(-1)">← Atrás</button>`;
+  html+=`<button class="btn-next" onclick="go(1)">${isLast?'✓ Ver mi reporte':'Siguiente →'}</button>`;
+  html+=`</div></div>`;
+
+  document.getElementById('step-container').innerHTML=html;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function go(dir){
+  save();
+  const next=current+dir;
+  if(next>=STEPS.length){showReport();return;}
+  if(next<0) return;
+  current=next;
+  render();
+}
+
+function urgTag(v){
+  v=parseInt(v)||3;
+  if(v>=4) return '<span class="urg-tag tag-red">Alta urgencia</span>';
+  if(v>=3) return '<span class="urg-tag tag-amber">Urgencia media</span>';
+  return '<span class="urg-tag tag-green">Baja urgencia</span>';
+}
+
+function meterColor(pct){
+  if(pct>60) return 'red';
+  if(pct>35) return 'amber';
+  return 'green';
+}
+
+function varToPct(v){return({'Menos de 20%':12,'Entre 20% y 40%':30,'Entre 40% y 70%':55,'Más del 70%':82})[v]||40}
+function retToPct(v){return({'Menos del 20%':10,'Entre 20% y 40%':30,'Entre 40% y 60%':50,'Más del 60%':70})[v]||30}
+function concToPct(v){return({'Menos del 20%':10,'Entre 20% y 35%':27,'Entre 35% y 50%':42,'Más del 50%':68})[v]||40}
+
+function showReport(){
+  const u1=parseInt(data.urgencia_ingresos)||3;
+  const u2=parseInt(data.urgencia_clientes)||3;
+  const u3=parseInt(data.urgencia_ops)||3;
+  const u4=parseInt(data.urgencia_posic)||3;
+  const areas=[
+    {name:'Ingresos variables',u:u1},
+    {name:'Retención clientes',u:u2},
+    {name:'Cap. operacional',u:u3},
+    {name:'Posicionamiento',u:u4},
+  ];
+  const maxU=Math.max(u1,u2,u3,u4);
+  const mainArea=areas.find(a=>a.u===maxU);
+  const vp=varToPct(data.variacion);
+  const rp=retToPct(data.clientes_repiten);
+  const cp=concToPct(data.concentracion);
+
+  document.getElementById('prog-fill').style.width='100%';
+  document.getElementById('prog-pct').textContent='100%';
+  document.getElementById('prog-label').textContent='Reporte completado';
+
+  document.getElementById('step-container').innerHTML=`
+  <div class="report-header">
+    <div style="font-size:10px;color:var(--gold);letter-spacing:4px;font-weight:700;margin-bottom:.4rem">REPORTE DIAGNÓSTICO</div>
+    <h2>Resultados M14 Studio</h2>
+    <p>Respondido por: <strong style="color:#ccc">${data.nombre||'—'}</strong> · ${data.cargo||'—'}</p>
+  </div>
+
+  ${data.desc?`<div class="r-card"><div class="r-title">Descripción de M14 (en sus palabras)</div><div class="r-val" style="font-style:italic">"${data.desc}"</div></div>`:''}
+
+  <div class="r-card">
+    <div class="r-title">Urgencia por área</div>
+    <div class="urgency-grid">
+      ${areas.map(a=>`<div class="urg-card">
+        <div class="urg-label">${a.name}</div>
+        <div class="urg-val">${a.u}<span style="font-size:14px;color:#999">/5</span></div>
+        ${urgTag(a.u)}
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:1rem;padding:.75rem;background:var(--gray-light);border-radius:8px;font-size:13px">
+      Área más urgente: <strong>${mainArea.name}</strong> (${mainArea.u}/5)
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="r-title">Problema prioritario declarado</div>
+    <div class="r-val">${data.problema_1||'—'}</div>
+  </div>
+
+  <div class="r-card">
+    <div class="r-title">Métricas clave de ingresos y clientes</div>
+    <div class="meter-row">
+      <div class="meter-head"><span class="meter-label">Variación de ingresos (estimada)</span><span class="meter-value">${data.variacion||'—'}</span></div>
+      <div class="meter-bar"><div class="meter-fill ${meterColor(vp)}" style="width:${vp}%"></div></div>
+    </div>
+    <div class="meter-row">
+      <div class="meter-head"><span class="meter-label">Tasa de retención de clientes</span><span class="meter-value">${data.clientes_repiten||'—'}</span></div>
+      <div class="meter-bar"><div class="meter-fill ${meterColor(100-rp)}" style="width:${rp}%"></div></div>
+    </div>
+    <div class="meter-row">
+      <div class="meter-head"><span class="meter-label">Concentración en cliente principal</span><span class="meter-value">${data.concentracion||'—'}</span></div>
+      <div class="meter-bar"><div class="meter-fill ${meterColor(cp)}" style="width:${cp}%"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:.75rem">
+      <div style="background:var(--gray-light);border-radius:8px;padding:.75rem">
+        <div style="font-size:11px;color:var(--gray)">Meses sin actividad/año</div>
+        <div style="font-size:20px;font-weight:700;color:var(--gold)">${data.meses_bajos||'—'}</div>
+      </div>
+      <div style="background:var(--gray-light);border-radius:8px;padding:.75rem">
+        <div style="font-size:11px;color:var(--gray)">¿Tienen retainers?</div>
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:.2rem">${data.retainers||'—'}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="r-card">
+    <div class="r-title">Capacidad operacional</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><div style="font-size:11px;color:var(--gray);margin-bottom:.2rem">Proyectos en paralelo</div><div style="font-size:20px;font-weight:700;color:var(--gold)">${data.proyectos_paralelo||'—'}</div></div>
+      <div><div style="font-size:11px;color:var(--gray);margin-bottom:.2rem">Rechazos por capacidad</div><div style="font-size:13px;font-weight:600">${data.rechazos||'—'}</div></div>
+      <div><div style="font-size:11px;color:var(--gray);margin-bottom:.2rem">Documentación</div><div style="font-size:13px;font-weight:600">${data.documentacion||'—'}</div></div>
+      <div><div style="font-size:11px;color:var(--gray);margin-bottom:.2rem">Dependencia personas</div><div style="font-size:13px;font-weight:600">${data.dependencia||'—'}</div></div>
+    </div>
+  </div>
+
+  <div class="r-card">
+    <div class="r-title">Posicionamiento y diferenciación</div>
+    <div style="margin-bottom:.6rem;font-size:13px"><span style="color:var(--gray)">Especialidad: </span><strong>${data.especialidad||'—'}</strong></div>
+    <div style="margin-bottom:.6rem;font-size:13px"><span style="color:var(--gray)">Nicho definido: </span><strong>${data.nicho||'—'}</strong></div>
+    <div style="margin-bottom:.6rem;font-size:13px"><span style="color:var(--gray)">Competencia: </span><strong>${data.competencia||'—'}</strong></div>
+    ${data.razon_eleccion?`<div style="margin-top:.75rem;padding:.75rem;background:var(--gray-light);border-radius:8px;font-size:13px;font-style:italic">"${data.razon_eleccion}"</div>`:''}
+  </div>
+
+  <div class="r-card">
+    <div class="r-title">Causa raíz de la variabilidad (en sus palabras)</div>
+    <div class="r-val">${data.causa_ingresos||'—'}</div>
+  </div>
+
+  <div class="r-card">
+    <div class="r-title">Principal freno al crecimiento</div>
+    <div class="r-val">${data.freno||'—'}</div>
+  </div>
+
+  <div class="r-card">
+    <div class="r-title">Visión de M14 en 2 años</div>
+    <div class="r-val">${data.suenio||'—'}</div>
+  </div>
+
+  <button class="pdf-btn" onclick="generatePDF()">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Descargar PDF — Anexo Informe 2
+  </button>
+  <div class="pdf-note">Este PDF incluye todas las respuestas de Emilio y está listo para el anexo del informe</div>
+  `;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function generatePDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,mg=18,cw=W-mg*2;
+  let y=mg;
+
+  const gold=[201,168,76];
+  const black=[17,17,17];
+  const white=[255,255,255];
+  const gray=[100,100,100];
+  const lgray=[245,245,245];
+
+  function setGold(){doc.setTextColor(...gold)}
+  function setBlack(){doc.setTextColor(...black)}
+  function setGray(){doc.setTextColor(...gray)}
+  function setWhite(){doc.setTextColor(...white)}
+
+  function checkPage(needed=15){if(y+needed>275){doc.addPage();y=mg;}}
+
+  function sectionBar(txt){
+    checkPage(16);
+    doc.setFillColor(...black);doc.rect(mg,y,cw,9,'F');
+    doc.setFillColor(...gold);doc.rect(mg,y,3,9,'F');
+    setGold();doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text(txt,mg+6,y+6.2);
+    y+=13;
+  }
+
+  function row2(label,val){
+    checkPage(8);
+    setGray();doc.setFontSize(9);doc.setFont('helvetica','normal');
+    doc.text(label,mg,y);
+    setBlack();doc.setFont('helvetica','bold');
+    const lines=doc.splitTextToSize(String(val||'—'),cw-55);
+    doc.text(lines,mg+55,y);
+    y+=5*lines.length+1.5;
+  }
+
+  function textArea(label,val){
+    checkPage(20);
+    setGray();doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text(label,mg,y);y+=5;
+    setBlack();doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(String(val||'—'),cw);
+    doc.text(lines,mg,y);y+=5*lines.length+4;
+  }
+
+  function meterPDF(label,val,pct){
+    checkPage(12);
+    setGray();doc.setFontSize(9);doc.text(label,mg,y);
+    setBlack();doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text(String(val||'—'),mg+cw-35,y,{align:'right'});
+    y+=4.5;
+    doc.setFillColor(220,220,220);doc.rect(mg,y,cw,3,'F');
+    const c=pct>60?[192,57,43]:pct>35?[243,156,18]:[39,174,96];
+    doc.setFillColor(...c);doc.rect(mg,y,cw*(pct/100),3,'F');
+    y+=6.5;
+  }
+
+  // ── PORTADA ──────────────────────────────────────────────────────────
+  doc.setFillColor(...black);doc.rect(0,0,W,297,'F');
+  doc.setFillColor(...gold);doc.rect(0,0,5,297,'F');
+  setGold();doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text('DIAGNÓSTICO EMPRESARIAL',mg+4,35);
+  doc.setFillColor(...gold);doc.rect(mg+4,38,25,0.5,'F');
+  setWhite();doc.setFontSize(38);doc.setFont('helvetica','bold');
+  doc.text('M14 Studio',mg+4,55);
+  doc.setTextColor(180,180,180);doc.setFontSize(13);doc.setFont('helvetica','normal');
+  doc.text('Reporte de Diagnóstico Empresarial',mg+4,66);
+  doc.text('Informe 2 — Taller de Negocios 2026',mg+4,73);
+  doc.setTextColor(200,200,200);doc.setFontSize(10);
+  doc.text('Respondido por: '+(data.nombre||'—')+' · '+(data.cargo||'—'),mg+4,95);
+  doc.setTextColor(120,120,120);doc.setFontSize(9);
+  doc.text('Grupo 12 · Rafael Correa · Maximiliano Espinosa · Cristóbal Armijo · Tomás Carvajal · Vicente Correa',mg+4,104,{maxWidth:cw});
+  doc.text('Prof. Nicole Pinaud · Otoño 2026',mg+4,111);
+
+  // ── PÁG 2: RESUMEN EJECUTIVO ─────────────────────────────────────────
+  doc.addPage();y=mg;
+  sectionBar('RESUMEN EJECUTIVO');
+  row2('Empresa:','M14 Studio · Productora audiovisual');
+  row2('Respondente:',data.nombre+' — '+data.cargo);
+  row2('Antigüedad:',data.anios+' año(s) operando');
+  row2('Equipo:',data.equipo);
+  y+=3;textArea('Descripción de M14 (en palabras de Emilio):',data.desc);
+  y+=3;
+
+  sectionBar('URGENCIA POR ÁREA');
+  const urgs=[
+    {l:'Ingresos variables',v:data.urgencia_ingresos||3},
+    {l:'Retención de clientes',v:data.urgencia_clientes||3},
+    {l:'Capacidad operacional',v:data.urgencia_ops||3},
+    {l:'Posicionamiento',v:data.urgencia_posic||3},
+  ];
+  urgs.forEach(u=>{
+    const pct=(parseInt(u.v)/5)*100;
+    const urg=parseInt(u.v)>=4?'Alta urgencia':parseInt(u.v)>=3?'Urgencia media':'Baja urgencia';
+    checkPage(10);
+    setGray();doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text(u.l,mg,y);
+    setBlack();doc.setFont('helvetica','bold');doc.text(u.v+'/5 — '+urg,mg+cw-35,y,{align:'right'});
+    y+=4.5;
+    doc.setFillColor(220,220,220);doc.rect(mg,y,cw,3,'F');
+    const c=parseInt(u.v)>=4?[192,57,43]:parseInt(u.v)>=3?[243,156,18]:[39,174,96];
+    doc.setFillColor(...c);doc.rect(mg,y,cw*(pct/100),3,'F');
+    y+=7;
+  });
+  y+=3;
+
+  const maxU=Math.max(...urgs.map(u=>parseInt(u.v)));
+  const mainA=urgs.find(u=>parseInt(u.v)===maxU);
+  checkPage(20);
+  doc.setFillColor(255,248,230);doc.rect(mg,y,cw,16,'F');
+  doc.setDrawColor(...gold);doc.setLineWidth(0.5);doc.rect(mg,y,cw,16,'S');
+  doc.setFillColor(...gold);doc.rect(mg,y,3,16,'F');
+  setGold();doc.setFontSize(8);doc.setFont('helvetica','bold');doc.text('ÁREA MÁS URGENTE',mg+6,y+5.5);
+  setBlack();doc.setFontSize(13);doc.text(mainA.l+' ('+mainA.v+'/5)',mg+6,y+12);
+  y+=20;
+
+  // ── PÁG 3: PROBLEMA PRIORITARIO Y MÉTRICAS ───────────────────────────
+  doc.addPage();y=mg;
+  sectionBar('PROBLEMA PRIORITARIO — DECLARADO POR EMILIO');
+  checkPage(22);
+  doc.setFillColor(255,248,230);doc.rect(mg,y,cw,18,'F');
+  doc.setDrawColor(...gold);doc.setLineWidth(0.8);doc.rect(mg,y,cw,18,'S');
+  doc.setFillColor(...gold);doc.rect(mg,y,4,18,'F');
+  const p1lines=doc.splitTextToSize(data.problema_1||'—',cw-12);
+  setBlack();doc.setFontSize(11);doc.setFont('helvetica','bold');
+  doc.text(p1lines,mg+8,y+10);
+  y+=22;
+
+  sectionBar('MÉTRICAS CLAVE');
+  meterPDF('Variación de ingresos mensual:',data.variacion,varToPct(data.variacion));
+  meterPDF('Tasa de retención de clientes:',data.clientes_repiten,retToPct(data.clientes_repiten));
+  meterPDF('Concentración en cliente principal:',data.concentracion,concToPct(data.concentracion));
+  row2('Meses sin actividad por año:',data.meses_bajos);
+  row2('¿Tienen retainers?:',data.retainers);
+  row2('Proceso de seguimiento post-proyecto:',data.seguimiento);
+  y+=4;
+
+  sectionBar('CAPACIDAD OPERACIONAL');
+  row2('Proyectos en paralelo (capacidad):',data.proyectos_paralelo);
+  row2('Rechazos por falta de capacidad:',data.rechazos);
+  row2('Documentación de procesos:',data.documentacion);
+  row2('Dependencia en personas clave:',data.dependencia);
+  y+=4;
+
+  sectionBar('POSICIONAMIENTO Y DIFERENCIACIÓN');
+  row2('Especialidad percibida:',data.especialidad);
+  row2('Nicho de cliente definido:',data.nicho);
+  row2('Comparación con competidores:',data.competencia);
+  y+=4;
+  textArea('¿Por qué eligen M14? (en palabras de Emilio):',data.razon_eleccion);
+
+  // ── PÁG 4: VOZ DE EMILIO ─────────────────────────────────────────────
+  doc.addPage();y=mg;
+  sectionBar('PERSPECTIVA CUALITATIVA — VOZ DE EMILIO');
+  textArea('Causa raíz de la variabilidad de ingresos (según Emilio):',data.causa_ingresos);
+  y+=4;textArea('Principal freno al crecimiento de M14 hoy:',data.freno);
+  y+=4;textArea('Visión de M14 en 2 años:',data.suenio);
+  y+=8;
+
+  sectionBar('CONCLUSIÓN DEL DIAGNÓSTICO');
+  checkPage(30);
+  setBlack();doc.setFontSize(10);doc.setFont('helvetica','bold');
+  doc.text('Área de mayor urgencia:',mg,y);y+=6;
+  setGold();doc.setFontSize(14);doc.text(mainA.l+' ('+mainA.v+'/5)',mg,y);y+=8;
+  setBlack();doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text('Problema prioritario declarado:',mg,y);y+=5;
+  const concL=doc.splitTextToSize(data.problema_1||'—',cw);
+  setBlack();doc.setFont('helvetica','bold');doc.text(concL,mg,y);y+=5*concL.length+10;
+
+  setGray();doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Reporte generado automáticamente · Grupo 12 · Taller de Negocios 2026 · Prof. Nicole Pinaud',mg,272);
+  doc.text('M14 Studio — Diagnóstico Empresarial · Informe 2',mg,277);
+
+  doc.save('Diagnostico_M14_Studio_Grupo12.pdf');
+}
+
+render();
+</script>
+</body>
+</html>
